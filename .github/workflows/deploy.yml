@@ -1,0 +1,36 @@
+name: Deploy CDK Java Stack
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+
+    - name: Set up Node.js (for CDK)
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install CDK and build Java
+      run: |
+        npm install -g aws-cdk
+        mvn package
+
+    - name: Deploy with CDK
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-2
+      run: |
+        cdk deploy --require-approval never
